@@ -69,7 +69,7 @@ To run `app.py` you have to do three simple steps:
 
 1. For linux:
 
-```console
+```bash
 cd [SPIDER_DIR]
 PYTHONPATH=$(pwd)
 python spider/app.py
@@ -78,7 +78,7 @@ python spider/app.py
 
 2. For Windows:
 
-```console
+```bash
 cd [SPIDER_DIR]
 set PYTHONPATH=%cd%
 python spider/app.py
