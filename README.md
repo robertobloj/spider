@@ -63,6 +63,34 @@ There are also more parameters:
 - `proxy_password` - password for proxy user
 - `output_dir` - output dir for downloaded files
 
+## How to run it
+
+To run `app.py` you have to do three simple steps:
+
+1. For linux:
+
+```console
+cd [SPIDER_DIR]
+PYTHONPATH=$(pwd)
+python spider/app.py
+
+```
+
+2. For Windows:
+
+```console
+cd [SPIDER_DIR]
+set PYTHONPATH=%cd%
+python spider/app.py
+```
+
+Where: 
+- `SPIDER_DIR` - root dir for spider project
+
+Important is defining spider project as a module (we add it to `PYTHONPATH` variable).
+
+If everything is OK, spider starts downloading `html`, `pdf` and `zip` files from the internet. 
+
 ## How it works
 
 Application download start url and does following tasks:
@@ -170,4 +198,3 @@ Url is `https://www.fake.com/file.zip`. Output directory is as follows:
  ###### Other
  
  Other extensions are not implemented yet.
- 
