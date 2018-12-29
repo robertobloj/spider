@@ -1,0 +1,66 @@
+version: 1
+disable_existing_loggers: False
+formatters:
+  default:
+    format: "%(asctime)s - [%(threadName)s] %(name)s - %(levelname)s - %(message)s"
+
+handlers:
+    console:
+        class: logging.StreamHandler
+        level: INFO
+        formatter: default
+        stream: ext://sys.stdout
+
+    file_handler:
+        class: logging.handlers.RotatingFileHandler
+        level: INFO
+        formatter: default
+        filename: logs/spider-info.log
+        maxBytes: 10485760 # 10MB
+        backupCount: 10
+        encoding: utf8
+
+    content_type_handler:
+        class: logging.handlers.RotatingFileHandler
+        level: WARN
+        formatter: default
+        filename: logs/spider-content-type.log
+        maxBytes: 10485760 # 10MB
+        backupCount: 3
+        encoding: utf8
+
+    errors_handler:
+        class: logging.handlers.RotatingFileHandler
+        level: WARN
+        formatter: default
+        filename: logs/spider-errors.log
+        maxBytes: 10485760 # 10MB
+        backupCount: 10
+        encoding: utf8
+
+    exec_func_time_log_handler:
+        class: logging.handlers.RotatingFileHandler
+        level: INFO
+        formatter: default
+        filename: logs/spider-time.log
+        maxBytes: 10485760 # 10MB
+        backupCount: 20
+        encoding: utf-8
+
+root:
+    level: INFO
+    handlers: [console, file_handler]
+
+loggers:
+    spider.errors:
+        level: WARN
+        handlers: [errors_handler]
+        propagate: False
+    spider.content.type:
+        level: WARN
+        handlers: [content_type_handler]
+        propagate: False
+    aijinmlplatform.core.util.exec_func_time_log:
+        level: INFO
+        handlers: [console, exec_func_time_log_handler]
+        propagate: False
