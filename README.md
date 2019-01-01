@@ -93,7 +93,7 @@ If everything is OK, spider starts downloading `html`, `pdf` and `zip` files fro
 
 ## How it works
 
-Application download start url and does following tasks:
+Application does following tasks:
 
 1. Download specified web page 
 2. Save it into *html* directory
