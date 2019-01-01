@@ -28,7 +28,6 @@ class TestHtmlHandler(TestCase):
             shutil.rmtree(self.output_dir)
         file_utils.create_dir_if_not_exist('{}/html'.format(self.output_dir))
         file_utils.create_dir_if_not_exist('{}/txt'.format(self.output_dir))
-        file_utils.create_dir_if_not_exist('{}/all'.format(self.output_dir))
 
     def test_save_html_result(self):
         html_file = "{}/html/{}.html".format(self.output_dir, self.output_name)
