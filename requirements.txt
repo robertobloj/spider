@@ -3,3 +3,4 @@ beautifulsoup4
 html5lib
 lxml
 pdfminer3
+nose2
