@@ -25,13 +25,8 @@ class HtmlHandler(ContentTypeHandler):
         :param soup: soup
         :return: multiple lines string
         """
-
-        # at the beginning we clean html from <script>, <style> tags
-        print(soup)
+        # at the beginning we clean html from <script>, <style> tags, etc.
         soup = self.__remove_tags(soup)
-        print("-------------")
-        print(soup)
-
         text_set = set()
         for s in soup.strings:
             stripped = s.strip()
