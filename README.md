@@ -62,6 +62,7 @@ There are also more parameters:
 - `proxy_user` - if proxy requires user, you can define it here
 - `proxy_password` - password for proxy user
 - `output_dir` - output dir for downloaded files
+- `output_zip` - output file name (zipped texts downloaded from `url`)
 
 ## How to run it
 

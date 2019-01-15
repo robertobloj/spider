@@ -27,6 +27,7 @@ def mock_get_txt(url, data=None, **kwargs):
     response = Object()
     response.ok = True
     response.text = 'OK'
+    response.status_code = 200
     response.headers = {
         'content-type': 'text/plain'
     }
@@ -38,6 +39,7 @@ def mock_get_zip(url, data=None, **kwargs):
     assert kwargs is not None
     response = Object()
     response.ok = True
+    response.status_code = 200
     response.content = 'some binary content'
     response.headers = {
         'content-type': 'application/zip'
@@ -50,6 +52,7 @@ def mock_get_pdf(url, data=None, **kwargs):
     assert kwargs is not None
     response = Object()
     response.ok = True
+    response.status_code = 200
     response.content = 'some binary content'
     response.headers = {
         'content-type': 'application/pdf'
@@ -62,6 +65,7 @@ def mock_get_html(url, data=None, **kwargs):
     assert kwargs is not None
     response = Object()
     response.ok = True
+    response.status_code = 200
     response.content = "<html>" \
                        "   <head></head>" \
                        "   <body>" \
@@ -113,8 +117,7 @@ class TestDownloadUtils(TestCase):
 
         links = get_links(soup, self.url, [], [], ['http'])
         self.assertIsNotNone(links)
-        self.assertEqual(1, len(links))
-        self.assertEqual('http://fake.url.com', links.pop())
+        self.assertEqual(2, len(links))
 
     def test_exclude_prefix(self):
         soup = BeautifulSoup(self.html, "lxml")
@@ -135,14 +138,14 @@ class TestDownloadUtils(TestCase):
     # noinspection PyUnusedLocal
     @mock.patch('requests.get', side_effect=mock_get_txt)
     def test_get_txt_page(self, mock_req_get):
-        links = get_page(self.url, self.output_dir, 0, [], [], ['http', 'page'])
+        links = get_page(self.url, self.output_dir, [], [], ['http', 'page'])
         self.assertIsNotNone(links)
         self.assertEqual(0, len(links))
 
     # noinspection PyUnusedLocal
     @mock.patch('requests.get', side_effect=mock_get_invalid_code)
     def test_get_invalid_code(self, mock_req_get):
-        links = get_page(self.url, self.output_dir, 0, [], [], ['http', 'page'])
+        links = get_page(self.url, self.output_dir, [], [], ['http', 'page'])
         self.assertIsNotNone(links)
         self.assertEqual(0, len(links))
 
@@ -152,7 +155,7 @@ class TestDownloadUtils(TestCase):
     def test_get_pdf_page(self, mock_req_get, mock_pdf_handler):
         mock_pdf_handler.return_value = None
 
-        links = get_page(self.url, self.output_dir, 0, [], [], ['http', 'page'])
+        links = get_page(self.url, self.output_dir, [], [], ['http', 'page'])
         self.assertIsNotNone(links)
         self.assertEqual(0, len(links))
 
@@ -162,7 +165,7 @@ class TestDownloadUtils(TestCase):
     def test_get_zip(self, mock_req_get, mock_zip_handler):
         mock_zip_handler.return_value = None
 
-        links = get_page(self.url, self.output_dir, 0, [], [], ['http', 'page'])
+        links = get_page(self.url, self.output_dir, [], [], ['http', 'page'])
         self.assertIsNotNone(links)
         self.assertEqual(0, len(links))
 
@@ -172,13 +175,11 @@ class TestDownloadUtils(TestCase):
     def test_get_html_page(self, mock_req_get, mock_html_handler):
         mock_html_handler.return_value = None
 
-        links = get_page(self.url, self.output_dir, 0, [], [], ['http', 'page'])
+        links = get_page(self.url, self.output_dir, [], [], ['http', 'page'])
         self.assertIsNotNone(links)
-        self.assertEqual(2, len(links))
-        self.assertTrue(links.pop() in self.urls)
-        self.assertTrue(links.pop() in self.urls)
+        self.assertEqual(3, len(links))
 
     # noinspection PyUnusedLocal
     @mock.patch('requests.get', side_effect=Exception("Boom!"))
     def test_exception(self, mock_req_get):
-        self.assertRaises(Exception, get_page(self.url, self.output_dir, 0, [], [], ['http', 'page']))
+        self.assertRaises(Exception, get_page(self.url, self.output_dir, [], [], ['http', 'page']))

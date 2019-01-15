@@ -15,6 +15,7 @@ from spider.handlers.zip_handler import ZipHandler
 __logger = logging.getLogger(__name__)
 __ct_logger = logging.getLogger("spider.content.type")
 __ex_url_logger = logging.getLogger("spider.excluded.urls")
+__url_logger = logging.getLogger("spider.downloaded.urls")
 __err_logger = logging.getLogger("spider.errors")
 __extensions = ["html", "pdf"]
 
@@ -68,14 +69,13 @@ def get_links(soup: BeautifulSoup, url: str, exclude_prefixes: List[str], exclud
     return links
 
 
-def get_page(url: str, output_dir: str, depth: int,
+def get_page(url: str, output_dir: str,
              exclude_prefixes: List[str], exclude_contains: List[str], include_contains: List[str],
              proxies: dict = None) -> set:
     """
     get single page
     :param url: url to download
     :param output_dir: output dir
-    :param depth: current depth
     :param exclude_prefixes: prefixes for url which should be excluded
     :param exclude_contains: phrases in url which should be excluded
     :param include_contains: url must contain
@@ -94,6 +94,7 @@ def get_page(url: str, output_dir: str, depth: int,
 
         links = set()
         response = requests.get(url, proxies=proxies)
+        __url_logger.info("Download page '{}' with status {}".format(url, response.status_code))
         if response.ok:
             headers = response.headers
             content_type = str(headers['content-type'])
@@ -148,7 +149,7 @@ def get_pages(urls: set, downloaded_urls: set, output_dir: str, depth: int,
         child_links = set()
 
         for i, u in enumerate(urls_list):
-            child_links |= get_page(u, output_dir, depth, exclude_prefixes, exclude_contains, include_contains, proxies)
+            child_links |= get_page(u, output_dir, exclude_prefixes, exclude_contains, include_contains, proxies)
 
         get_pages(child_links, downloaded_urls | urls, output_dir, depth + 1,
                   exclude_prefixes, exclude_contains, include_contains, proxies, max_depth)

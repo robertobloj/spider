@@ -11,7 +11,7 @@ handlers:
         formatter: default
         stream: ext://sys.stdout
 
-    file_handler:
+    app_handler:
         class: logging.handlers.RotatingFileHandler
         level: INFO
         formatter: default
@@ -29,11 +29,20 @@ handlers:
         backupCount: 3
         encoding: utf8
 
-    excluded_handler:
+    excluded_urls_handler:
         class: logging.handlers.RotatingFileHandler
         level: WARN
         formatter: default
-        filename: logs/spider-excluded_urls.log
+        filename: logs/spider-excluded-urls.log
+        maxBytes: 10485760 # 10MB
+        backupCount: 3
+        encoding: utf8
+
+    downloaded_urls_handler:
+        class: logging.handlers.RotatingFileHandler
+        level: WARN
+        formatter: default
+        filename: logs/spider-downloaded-urls.log
         maxBytes: 10485760 # 10MB
         backupCount: 3
         encoding: utf8
@@ -47,18 +56,9 @@ handlers:
         backupCount: 10
         encoding: utf8
 
-    exec_func_time_log_handler:
-        class: logging.handlers.RotatingFileHandler
-        level: INFO
-        formatter: default
-        filename: logs/spider-time.log
-        maxBytes: 10485760 # 10MB
-        backupCount: 20
-        encoding: utf-8
-
 root:
     level: INFO
-    handlers: [console, file_handler]
+    handlers: [console, app_handler]
 
 loggers:
     spider.errors:
@@ -71,5 +71,9 @@ loggers:
         propagate: False
     spider.excluded.urls:
         level: WARN
-        handlers: [excluded_handler]
+        handlers: [excluded_urls_handler]
         propagate: False
+    spider.downloaded.urls:
+      level: WARN
+      handlers: [downloaded_urls_handler]
+      propagate: False
