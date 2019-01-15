@@ -14,6 +14,7 @@ from spider.handlers.zip_handler import ZipHandler
 
 __logger = logging.getLogger(__name__)
 __ct_logger = logging.getLogger("spider.content.type")
+__ex_url_logger = logging.getLogger("spider.excluded.urls")
 __err_logger = logging.getLogger("spider.errors")
 __extensions = ["html", "pdf"]
 
@@ -43,6 +44,8 @@ def get_links(soup: BeautifulSoup, url: str, exclude_prefixes: List[str], exclud
 
         # sometimes we have <a></a>, we don't need it
         if href:
+            href = __build_url(domain, href)
+
             for contain in include_contains:
                 if contain in href:
                     include = True
@@ -50,17 +53,18 @@ def get_links(soup: BeautifulSoup, url: str, exclude_prefixes: List[str], exclud
 
             for prefix in exclude_prefixes:
                 if href.startswith(prefix) or href == "/":
+                    __ex_url_logger.info("Prefix '{}' is excluded, drop url: {}".format(prefix, href))
                     include = False
                     break
 
             for contain in exclude_contains:
                 if contain in href:
+                    __ex_url_logger.info("Contains '{}', drop url: {}".format(contain, href))
                     include = False
                     break
 
             if include:
-                href = href.strip()
-                links.add(href if href.startswith("http") else "{}/{}".format(domain, href))
+                links.add(href)
     return links
 
 
@@ -153,3 +157,15 @@ def get_pages(urls: set, downloaded_urls: set, output_dir: str, depth: int,
 def get_output_name(url: str):
     return url.replace("://", "_").replace(".", "_").replace("/", "_").replace("#", "_").replace("?", "_") \
         .replace("=", "_").replace(":", "_").replace("%", "_").replace("&", "_").replace("-", "_")
+
+
+def __build_url(domain: str, href: str) -> str:
+    """
+    builds url as absolute path
+    :param domain: domain
+    :param href: url
+    :return: absolute url
+    """
+    href = href.strip()
+    slash = "" if href.startswith("/") else "/"
+    return href if href.startswith("http") else "{}{}{}".format(domain, slash, href)
