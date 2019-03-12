@@ -18,16 +18,21 @@ __ex_url_logger = logging.getLogger("spider.excluded.urls")
 __url_logger = logging.getLogger("spider.downloaded.urls")
 __err_logger = logging.getLogger("spider.errors")
 __extensions = ["html", "pdf"]
+html_content_type = "text/html"
+pdf_content_type = "application/pdf"
+zip_content_type = "application/zip"
 
 __pdf_handler = PdfHandler()
 __html_handler = HtmlHandler()
 __zip_handler = ZipHandler(__html_handler, __pdf_handler)
 
 
-def get_links(soup: BeautifulSoup, url: str, exclude_prefixes: List[str], exclude_contains: List[str],
+def get_links(soup: BeautifulSoup, url: str, downloaded_urls: set,
+              exclude_prefixes: List[str], exclude_contains: List[str],
               include_contains: List[str]) -> set:
     """
     extracts links from downloaded page
+    :param downloaded_urls: downloaded pages (for speedup)
     :param url: parent url
     :param soup: beautiful soup object
     :param exclude_prefixes: some links we want to exclude
@@ -64,16 +69,23 @@ def get_links(soup: BeautifulSoup, url: str, exclude_prefixes: List[str], exclud
                     include = False
                     break
 
+            if href in downloaded_urls:
+                __ex_url_logger.info("Href '{}' is downloaded, we skip it".format(href))
+                include = False
+
             if include:
                 links.add(href)
     return links
 
 
-def get_page(url: str, output_dir: str,
-             exclude_prefixes: List[str], exclude_contains: List[str], include_contains: List[str],
+def get_page(url: str, downloaded_urls: set, output_dir: str,
+             exclude_prefixes: List[str], exclude_contains: List[str],
+             exclude_content_types: List[str], include_contains: List[str],
              proxies: dict = None) -> set:
     """
     get single page
+    :param exclude_content_types: excluded content types
+    :param downloaded_urls: list of downloaded pages (for speedup)
     :param url: url to download
     :param output_dir: output dir
     :param exclude_prefixes: prefixes for url which should be excluded
@@ -99,15 +111,15 @@ def get_page(url: str, output_dir: str,
             headers = response.headers
             content_type = str(headers['content-type'])
 
-            if "text/html" in content_type:
+            if html_content_type in content_type and html_content_type not in exclude_content_types:
                 soup = BeautifulSoup(response.content, "lxml")
                 __html_handler.save_result(output_dir, output_name, soup)
-                links |= get_links(soup, url, exclude_prefixes, exclude_contains, include_contains)
+                links |= get_links(soup, url, downloaded_urls, exclude_prefixes, exclude_contains, include_contains)
 
-            elif "application/pdf" in content_type:
+            elif pdf_content_type in content_type and pdf_content_type not in exclude_content_types:
                 __pdf_handler.save_result(output_dir, output_name, response.content)
 
-            elif "application/zip" in content_type:
+            elif zip_content_type in content_type and zip_content_type not in exclude_content_types:
                 __zip_handler.save_result(output_dir, output_name, response.content)
 
             else:
@@ -126,10 +138,12 @@ def get_page(url: str, output_dir: str,
 
 
 def get_pages(urls: set, downloaded_urls: set, output_dir: str, depth: int,
-              exclude_prefixes: List[str], exclude_contains: List[str], include_contains: List[str],
+              exclude_prefixes: List[str], exclude_contains: List[str],
+              exclude_content_types: List[str], include_contains: List[str],
               proxies: dict = None, max_depth: int = 1000) -> None:
     """
     allows to get pages from urls defined as parameter
+    :param exclude_content_types: excluded content types
     :param urls: url addresses to download
     :param downloaded_urls: downloaded urls. Because of recursive calls, we don't want to download again the same
                             urls. We collect all downloaded urls and we put it into next iteration for subtraction
@@ -149,10 +163,11 @@ def get_pages(urls: set, downloaded_urls: set, output_dir: str, depth: int,
         child_links = set()
 
         for i, u in enumerate(urls_list):
-            child_links |= get_page(u, output_dir, exclude_prefixes, exclude_contains, include_contains, proxies)
+            child_links |= get_page(u, downloaded_urls, output_dir, exclude_prefixes, exclude_contains,
+                                    exclude_content_types, include_contains, proxies)
 
         get_pages(child_links, downloaded_urls | urls, output_dir, depth + 1,
-                  exclude_prefixes, exclude_contains, include_contains, proxies, max_depth)
+                  exclude_prefixes, exclude_contains, exclude_content_types, include_contains, proxies, max_depth)
 
 
 def get_output_name(url: str):
