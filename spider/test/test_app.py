@@ -6,8 +6,9 @@ from spider.app import App
 
 # noinspection PyUnusedLocal
 def get_pages(urls: set, downloaded_urls: set, output_dir: str, depth: int,
-              exclude_prefixes: List[str], exclude_contains: List[str], include_contains: List[str],
-              proxies: dict = None, max_depth: int=1000):
+              exclude_prefixes: List[str], exclude_contains: List[str],
+              exclude_content_types: List[str], include_contains: List[str],
+              proxies: dict = None, max_depth: int = 1000):
     pass
 
 
@@ -33,6 +34,7 @@ class TestApp(TestCase):
                   max_depth=20000,
                   exclude_prefixes=[],
                   exclude_contains=[],
+                  exclude_content_types=[],
                   include_contains=['http'])
         self.assertIsNotNone(app)
         app.main()
@@ -48,6 +50,7 @@ class TestApp(TestCase):
                   max_depth=2,
                   exclude_prefixes=[],
                   exclude_contains=[],
+                  exclude_content_types=[],
                   include_contains=['http'])
         self.assertIsNotNone(app)
         app.main()

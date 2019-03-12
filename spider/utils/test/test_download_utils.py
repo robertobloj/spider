@@ -106,7 +106,7 @@ class TestDownloadUtils(TestCase):
     def test_get_all_links(self):
         soup = BeautifulSoup(self.html, "lxml")
 
-        links = get_links(soup, self.url, [], [], ['http', 'page'])
+        links = get_links(soup, self.url, set(), [], [], ['http', 'page'])
         self.assertIsNotNone(links)
         self.assertEqual(2, len(links))
         self.assertTrue(links.pop() in self.urls)
@@ -115,14 +115,14 @@ class TestDownloadUtils(TestCase):
     def test_some_links(self):
         soup = BeautifulSoup(self.html, "lxml")
 
-        links = get_links(soup, self.url, [], [], ['http'])
+        links = get_links(soup, self.url, set(), [], [], ['http'])
         self.assertIsNotNone(links)
         self.assertEqual(2, len(links))
 
     def test_exclude_prefix(self):
         soup = BeautifulSoup(self.html, "lxml")
 
-        links = get_links(soup, self.url, ['http://fake'], [], ['http', 'page'])
+        links = get_links(soup, self.url, set(), ['http://fake'], [], ['url.com', 'page'])
         self.assertIsNotNone(links)
         self.assertEqual(1, len(links))
         self.assertEqual('http://some.url/page/article/download/example.html', links.pop())
@@ -130,7 +130,7 @@ class TestDownloadUtils(TestCase):
     def test_exclude_contains(self):
         soup = BeautifulSoup(self.html, "lxml")
 
-        links = get_links(soup, self.url, [], ['fake'], ['http', 'page'])
+        links = get_links(soup, self.url, set(), ['fake'], [], ['https', 'page'])
         self.assertIsNotNone(links)
         self.assertEqual(1, len(links))
         self.assertEqual('http://some.url/page/article/download/example.html', links.pop())
@@ -138,14 +138,14 @@ class TestDownloadUtils(TestCase):
     # noinspection PyUnusedLocal
     @mock.patch('requests.get', side_effect=mock_get_txt)
     def test_get_txt_page(self, mock_req_get):
-        links = get_page(self.url, self.output_dir, [], [], ['http', 'page'])
+        links = get_page(self.url, set(), self.output_dir, [], [], [], ['http', 'page'])
         self.assertIsNotNone(links)
         self.assertEqual(0, len(links))
 
     # noinspection PyUnusedLocal
     @mock.patch('requests.get', side_effect=mock_get_invalid_code)
     def test_get_invalid_code(self, mock_req_get):
-        links = get_page(self.url, self.output_dir, [], [], ['http', 'page'])
+        links = get_page(self.url, set(), self.output_dir, [], [], [], ['http', 'page'])
         self.assertIsNotNone(links)
         self.assertEqual(0, len(links))
 
@@ -155,7 +155,7 @@ class TestDownloadUtils(TestCase):
     def test_get_pdf_page(self, mock_req_get, mock_pdf_handler):
         mock_pdf_handler.return_value = None
 
-        links = get_page(self.url, self.output_dir, [], [], ['http', 'page'])
+        links = get_page(self.url, set(), self.output_dir, [], [], [], ['http', 'page'])
         self.assertIsNotNone(links)
         self.assertEqual(0, len(links))
 
@@ -165,7 +165,7 @@ class TestDownloadUtils(TestCase):
     def test_get_zip(self, mock_req_get, mock_zip_handler):
         mock_zip_handler.return_value = None
 
-        links = get_page(self.url, self.output_dir, [], [], ['http', 'page'])
+        links = get_page(self.url, set(), self.output_dir, [], [], [], ['http', 'page'])
         self.assertIsNotNone(links)
         self.assertEqual(0, len(links))
 
@@ -175,11 +175,11 @@ class TestDownloadUtils(TestCase):
     def test_get_html_page(self, mock_req_get, mock_html_handler):
         mock_html_handler.return_value = None
 
-        links = get_page(self.url, self.output_dir, [], [], ['http', 'page'])
+        links = get_page(self.url, set(), self.output_dir, [], [], [], ['http', 'page'])
         self.assertIsNotNone(links)
         self.assertEqual(3, len(links))
 
     # noinspection PyUnusedLocal
     @mock.patch('requests.get', side_effect=Exception("Boom!"))
     def test_exception(self, mock_req_get):
-        self.assertRaises(Exception, get_page(self.url, self.output_dir, [], [], ['http', 'page']))
+        self.assertRaises(Exception, get_page(self.url, set(), self.output_dir, [], [], [], ['http', 'page']))
